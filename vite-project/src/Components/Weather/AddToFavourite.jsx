@@ -6,14 +6,18 @@ import {FavouriteContext,WeatherContext} from "../../Context"
 export default function AddToFavourite() {
   const {addToFavourites,removeFromFavourites,favourites} = useContext(FavouriteContext);
   
-  const {WeatherData} = useContext(WeatherContext)
+  const {weatherData} = useContext(WeatherContext)
   const [isFavourite,toggleFavourite] = useState(false);
-  const {latitude,longitude,location} = WeatherData;
+  const {latitude,longitude,location} = weatherData|| {};
 
   useEffect(() => {
-        const found = favourites.find((fav) => fav.location ===location);
-		toggleFavourite(found);
-  },[])
+	      if (location) {
+            const found = favourites.find((fav) => fav.location === location);
+            toggleFavourite(found);
+          }
+        // const found = favourites.find((fav) => fav.location ===location);
+		// toggleFavourite(found);
+  },[weatherData, favourites])
 
   function handleFavourites () {
 	const found = favourites.find((fav) => fav.location === location);

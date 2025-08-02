@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useContext } from 'react';
+import {LocationContext} from '../Context';
 
 const useWeather = () => {
     const [weatherData, setWeatherData] = useState({
@@ -21,6 +22,9 @@ const useWeather = () => {
 
     const [error, setError] = useState(null);
 
+    const {selectedLocation} = useContext(LocationContext);
+    
+
     const fetchWeather = async (latitude, longitude) => {
         try {
             setLoading({
@@ -29,8 +33,8 @@ const useWeather = () => {
             });
 
             const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${import.meta.env.VITE_WEATHER_API_KEY}&units=metric`;
-            console.log("API KEY:", import.meta.env.VITE_WEATHER_API_KEY);
-            console.log("Fetching from URL:", url);
+            // console.log("API KEY:", import.meta.env.VITE_WEATHER_API_KEY);
+            // console.log("Fetching from URL:", url);
 
             const response = await fetch(url, { cache: "no-store" });
 
@@ -40,7 +44,7 @@ const useWeather = () => {
             }
 
             const data = await response.json();
-            console.log("API থেকে পাওয়া ডেটা:", data);
+            // console.log("API থেকে পাওয়া ডেটা:", data);
 
             setWeatherData({
                 location: data?.name || "",
@@ -63,6 +67,7 @@ const useWeather = () => {
             setError(err);
         } finally {
             setLoading({
+                
                 state: false,
                 message: ""
             });
@@ -71,9 +76,16 @@ const useWeather = () => {
 
     useEffect(() => {
         setLoading({
+            
             state: true,
             message: "Finding location......"
         });
+        if (selectedLocation.latitude && selectedLocation.longitude) {
+            fetchWeather(
+                selectedLocation.latitude,
+                selectedLocation.longitude
+            );
+        } else {
 
         navigator.geolocation.getCurrentPosition(function (position) {
             fetchWeather(position.coords.latitude, position.coords.longitude);
@@ -81,10 +93,13 @@ const useWeather = () => {
             setError(err);
             setLoading({ state: false, message: "" });
         });
-    }, []);
+
+       }
+
+    }, [selectedLocation.latitude, selectedLocation.longitude]);
 
      useEffect(() => {
-        console.log("Updated weatherData:", weatherData);
+       console.log("Updated weatherData:", weatherData);
     }, [weatherData]);
 
     return {
